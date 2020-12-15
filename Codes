@@ -1,0 +1,175 @@
+Code of R for three-dimensional Gumbel copula with θ=2 ,θ=5 ,θ=8
+
+library(copula)
+library(RColorBrewer)
+library(scatterplot3d)
+set.seed(1994)
+gc <- gumbelCopula(2, dim = 3) # theta = 2 
+U <- rCopula(200, copula = gc)
+plotvar <- U[,3] 
+nclr <- 9 
+plotclr <- brewer.pal(nclr,"PuBu") 
+colornum <- cut(rank(plotvar), nclr, labels=FALSE)
+colcode <- plotclr[colornum] 
+plot.angle <- 135
+scatterplot3d(U[,1], U[,2], U[,3], type="h", angle=plot.angle, color=colcode,
+              pch=20, cex.symbols=2, col.axis="gray", col.grid="gray",
+              xlab = "u", ylab = "v", zlab = "z")
+gc <- gumbelCopula(5, dim = 3) # theta = 5 
+U <- rCopula(200, copula = gc)
+scatterplot3d(U[,1], U[,2], U[,3], type="h", angle=plot.angle, color=colcode,
+              pch=20, cex.symbols=2, col.axis="gray", col.grid="gray",
+              xlab = "u", ylab = "v", zlab = "z")
+gc <- gumbelCopula(8, dim = 3) # theta = 8 
+U <- rCopula(200, copula = gc)
+scatterplot3d(U[,1], U[,2], U[,3], type="h", angle=plot.angle, color=colcode, pch=20, cex.symbols=2, col.axis="gray", col.grid="gray", xlab = "u", ylab = "v", zlab = "z")
+
+Code of R for Numerical Example I
+
+gumbel.cop <- function(u1,u2,u3,theta){
+    c_uvz <- exp(-((-log(u1))^theta + (-log(u2))^theta + (-log(u3))^theta)^(1/theta))
+    c_uv <- exp(-((-log(u1))^theta + (-log(u2))^theta)^(1/theta))
+    c_uz <- exp(-((-log(u1))^theta + (-log(u3))^theta)^(1/theta))
+    c_vz <- exp(-((-log(u2))^theta + (-log(u3))^theta)^(1/theta))
+    c_u <- u1
+    c_v <- u2
+    c_z <- u3
+    out <- data.frame(c_uvz,c_uv,c_uz,c_vz,c_u,c_v,c_z)
+    return(data.frame(out))
+  }
+dens_cop <- function(t_cop){
+    p_1 <- t_cop$c_uvz
+    p_2 <- t_cop$c_vz-t_cop$c_uvz
+    p_3 <- t_cop$c_u-t_cop$c_uvz
+    p_4 <- 1-t_cop$c_u-t_cop$c_vz+t_cop$c_uvz
+    prob_copula <- c(p_1, p_2,p_3,p_4)
+    r_name <- c("p1","p2","p3","p4")
+    return(data.frame(prob_copula, row.names = r_name)) 
+}
+triv_bin <- function(n,i,j,k,prob1){
+    h <- max(0, i + min(j,k) - n)
+    density_bin <- (prob1[1,]^h)*(prob1[2,]^(min(j,k)-h))*
+      ((prob1[3,])^(i-h))*((prob1[4,])^(n-i-min(j,k)+h))
+    fact_bin <- factorial(n)/(factorial(h)*factorial(i-h)*factorial(min(j,k)-h)             *factorial(n-i-min(j,k)+h))
+    b <- min(i,j,k)
+    sum1 <- (b-h)*(fact_bin*density_bin)
+    sum2 <- (n-i)*sum1
+    sum3 <- (n-j)*sum2
+    sum4 <- (n-k)*sum3
+    return(sum4)
+  }
+p <- c(0.08907, 0.14196,0.09765,0.03811, 0.22976,0.14813,0.20880,0.04652)
+prob <- data.frame(p)
+u1 <- prob[1,]+prob[2,]+prob[5,]+prob[6,]
+u2 <- prob[1,]+prob[3,]+prob[5,]+prob[7,]
+u3 <- prob[1,]+prob[2,]+prob[3,]+prob[4,]  
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(8,6,4,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(5,3,2,3,prob1 = prob1)) }
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(6,3,5,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(4,1,1,3,prob1 = prob1))
+}
+
+Code of R for Numerical Example II
+
+p <- c(0.04381, 0.13967, 0.05423, 0.15376, 0.21777, 0.18488, 0.11906, 0.08682)
+prob <- data.frame(p)
+u1 <- prob[1,]+prob[2,]+prob[5,]+prob[6,]
+u2 <- prob[1,]+prob[3,]+prob[5,]+prob[7,]
+u3 <- prob[1,]+prob[2,]+prob[3,]+prob[4,]  
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(8,6,4,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(5,3,2,3,prob1 = prob1)) }
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(6,3,5,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(4,1,1,3,prob1 = prob1))
+}
+
+Code of R for Numerical Example III
+
+p <- c(0.12457, 0.16770, 0.19479, 0.02589, 0.20548, 0.18414, 0.05946, 0.03797)
+prob <- data.frame(p)
+u1 <- prob[1,]+prob[2,]+prob[5,]+prob[6,]
+u2 <- prob[1,]+prob[3,]+prob[5,]+prob[7,]
+u3 <- prob[1,]+prob[2,]+prob[3,]+prob[4,]  
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(8,6,4,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(5,3,2,3,prob1 = prob1)) }
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(6,3,5,4,prob1 = prob1))
+}
+for (theta in c(2,5,8)){
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=theta)
+  prob1 <- dens_cop(t_cop) 
+  print(triv_bin(4,1,1,3,prob1 = prob1))
+}
+
+Code of R for Numerical Example IV
+
+set.seed(11123)
+options(digits = 4)
+df_total = data.frame()
+for (i in 1:500){
+  p <- as.numeric(prop.table(table(sample(1:8, size=1000, replace=TRUE))))
+  prob <- data.frame(p) 
+  u1 <- prob[1,]+prob[2,]+prob[5,]+prob[6,]
+  u2 <- prob[1,]+prob[3,]+prob[5,]+prob[7,]
+  u3 <- prob[1,]+prob[2,]+prob[3,]+prob[4,]  
+  t_cop <- gumbel.cop(u1=u1,u2=u2,u3=u3,theta=2)
+  prob1 <- dens_cop(t_cop) 
+  a <- triv_bin(8,6,4,4,prob1 = prob1)
+df_total <- rbind(df_total, a)
+ }
+names(df_total)[1] <- "density"
+quantile(df_total$density, probs = c(0.025, 0.50,0.975))
+mean(df_total$density)
+ggplot(df_total, aes(`density`)) + geom_density()+ 
+geom_vline(xintercept = quantile(df_total$density, probs = c(0.025, 0.975)), 
+lwd = 0.9, linetype = "dashed", col = "#4d79ff")+
+geom_text(aes(x=0.01858, label="97.5 %", y = 250) , colour="#4d79ff", angle=90, vjust = -1.2, text=element_text(size=14), family = "Helvatica")+
+geom_text(aes(x=0.01858 , label="0.01858 ", y = 0) , colour="#4d79ff",angle=90, vjust = -1,hjust = -0.2, size = 3.7, family = "Helvatica")+
+geom_text(aes(x=0.01276, label="2.5 %", y = 250), colour="#4d79ff", angle=90, vjust = -1.2, text=element_text(size=14), family = "Helvatica")+
+geom_text(aes(x=0.01276, label="0.01276 ", y = 0) , colour="#4d79ff", angle=90,vjust = -1, hjust = -0.2,size = 3.7, family = "Helvatica")+ylab("") + xlab("") + theme_minimal()
+b <- (df_total$density)
+a <- empirical_cdf(b, ubounds=seq(0,1, length.out = 500))
+a <- a$UpperBound
+plotvar <- seq(0,1,length.out = 500) 
+nclr <- 9 
+plotclr <- brewer.pal(nclr,"PuBu") 
+colornum <- cut(rank(plotvar), nclr, labels=FALSE)
+colcode <- plotclr[colornum] 
+plot.angle <- 135
+s3d <- scatterplot3d(df_total$density, a, plotvar, type="h", angle=plot.angle, color=colcode, pch=20, cex.symbols=2, col.axis="gray", col.grid="gray")
